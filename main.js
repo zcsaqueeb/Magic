@@ -13,12 +13,12 @@ function loadData(file) {
   try {
     const datas = fs.readFileSync(file, "utf8").replace(/\r/g, "").split("\n").filter(Boolean);
     if (datas?.length <= 0) {
-      console.log(colors.red(`Không tìm thấy dữ liệu ${file}`));
+      console.log(`Không tìm thấy dữ liệu ${file}`);
       return [];
     }
     return datas;
   } catch (error) {
-    console.log(`Không tìm thấy file ${file}`.red);
+    console.log(`Không tìm thấy file ${file}`);
     return [];
   }
 }
@@ -48,28 +48,13 @@ async function showLiveCountdown(totalMs) {
   console.log("\n✅ Time reached! Retrying roll...");
 }
 
-async function runAccount(cookie, proxy) {
+async function runAccount(cookie) {
   try {
-    const [username, password, ip, port] = proxy.replace("http://", "").replace("@", ":").split(":");
-    // console.log(username, pass, ip, port);
-    // process.exit(0);
-
     const browser = await puppeteer.launch({
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
     const page = await browser.newPage();
-    // await page.authenticate({ username, password });
-    // if (fs.existsSync("cookies.json")) {
-    //   const cookies = JSON.parse(fs.readFileSync("cookies.json"));
-    //   console.log(cookies);
-    //   await page.setCookie(...cookies);
-    //   console.log("✅ Cookies loaded successfully. \n⏳ Webpage Loading: may take up to 60 secs...");
-    // } else {
-    //   console.log("❌ Cookies file not found. Please run the login step first.");
-    //   await browser.close();
-    //   return;
-    // }
     await page.setCookie(cookie);
     await page.goto(MAGICNEWTON_URL, { waitUntil: "networkidle2", timeout: 60000 });
 
@@ -115,7 +100,6 @@ async function runAccount(cookie, proxy) {
       });
 
       if (throwDiceClicked) {
-        // console.log("✅ 'Throw Dice' button clicked!");
         console.log("⏳ Waiting 60 seconds for dice animation...");
         await delay(60000);
         userCredits = await page.$eval("#creditBalance", (el) => el.innerText).catch(() => "Unknown");
@@ -152,7 +136,6 @@ async function runAccount(cookie, proxy) {
   console.log(`Tool được phát triển bởi nhóm telegram: https://t.me/airdrophuntersieutoc`);
   console.log("🚀 Starting Puppeteer Bot...");
   const data = loadData("data.txt");
-  const proxies = loadData("proxy.txt");
 
   while (true) {
     try {
@@ -166,9 +149,7 @@ async function runAccount(cookie, proxy) {
           secure: true,
           httpOnly: true,
         };
-        const proxy = proxies[i];
-        const [username, password, ip, port] = proxy.replace("http://", "").replace("@", ":").split(":");
-        await runAccount(cookie, proxy);
+        await runAccount(cookie);
       }
     } catch (error) {
       console.error("❌ Error:", error);
